@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Saved Recipes - Flavor Library{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Saved Recipes</h2>
+{% if saved_recipes %}
+    <ul class="list-group">
+        {% for saved_recipe in saved_recipes %}
+            <li class="list-group-item">
+                <h5>{{ saved_recipe.recipe.title }}</h5>
+                <a href="{{ url_for('view_recipe', recipe_id=saved_recipe.recipe.id) }}" class="btn btn-info">View Recipe</a>
+                <form action="{{ url_for('delete_saved_recipe', saved_recipe_id=saved_recipe.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to remove this recipe from your saved list?')">Delete</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>You haven't saved any recipes yet.</p>
+{% endif %}
+{% endblock %}

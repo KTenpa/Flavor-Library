@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Create Recipe - Flavor Library{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Create Recipe</h2>
+<form method="POST" action="" class="needs-validation" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+        {{ form.title.label(class="form-label") }}
+        {{ form.title(class="form-control") }}
+        {% for error in form.title.errors %}
+            <div class="text-danger">{{ error }}</div>
+        {% endfor %}
+    </div>
+    <div class="mb-3">
+        {{ form.ingredients.label(class="form-label") }}
+        {{ form.ingredients(class="form-control") }}
+        {% for error in form.ingredients.errors %}
+            <div class="text-danger">{{ error }}</div>
+        {% endfor %}
+    </div>
+    <div class="mb-3">
+        {{ form.instructions.label(class="form-label") }}
+        {{ form.instructions(class="form-control") }}
+        {% for error in form.instructions.errors %}
+            <div class="text-danger">{{ error }}</div>
+        {% endfor %}
+    </div>
+    <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+</form>
+{% endblock %}
