@@ -22,6 +22,12 @@ Built with Bootstrap, Flavor Library ensures a smooth and intuitive experience a
 
 ---
 
+## **URL**
+
+- https://flavor-library.onrender.com/
+
+---
+
 ## **Tech Stack** 🛠️
 
 - **Frontend**: HTML, JavaScript, Bootstrap
