@@ -4,6 +4,13 @@
 
 {% block content %}
 <div class="recipe-details">
+    {% if recipe.image_url %}
+        <div class="recipe-image">
+            <img src="{{ recipe.image_url }}" alt="{{ recipe.title }}" class="img-fluid mb-3" style="max-width: 50%; height: auto;"/>
+        </div>
+    {% else %}
+        <p>No image available for this recipe.</p>
+    {% endif %}
     <h2>{{ recipe.title }}</h2>
     <h3>Ingredients</h3>
     <ul class="list-group">

@@ -32,6 +32,7 @@ class UserRecipe(db.Model):
     ingredients = db.Column(db.Text, nullable=False)
     instructions = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    image_url = db.Column(db.Text, nullable=True) 
     
 class SavedRecipe(db.Model):
     id = db.Column(db.Integer, primary_key=True)

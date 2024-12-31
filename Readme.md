@@ -35,3 +35,39 @@ Built with Bootstrap, Flavor Library ensures a smooth and intuitive experience a
 - **Database**: PostgreSQL
 
 ---
+
+## **Setup and Run Instructions** ⚙️
+
+To run this application locally, follow these steps:
+
+### 1. **Clone the Repository**  
+Clone the Flavor Library repository to your local machine:
+```
+git clone https://github.com/hatchways-community/capstone-project-one-74bf2e5dfa914390b2bf4470670f2891.git
+cd project_folder
+```
+### 2. **Install dependencies**  
+Install the required Python packages listed in requirements.txt:
+```
+python3 -m venv venv
+source venv/bin/activate
+```
+### 3. **Configure environment variables**  
+Create a .env file in the project root directory and add the following:
+```
+SPOONACULAR_API_KEY=your_spoonacular_api_key
+SECRET_KEY=your_secret_key
+DATABASE_URL=your_database_url
+```
+
+### 4. **Run the application**  
+```
+flask run
+```
+The application will now be running at http://127.0.0.1:5000.
+
+
+## **Testing** 🧪
+```
+pytest
+```

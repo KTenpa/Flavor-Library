@@ -7,15 +7,19 @@ from forms import RegistrationForm, LoginForm, RecipeForm
 from sqlalchemy.exc import IntegrityError
 from dotenv import load_dotenv
 import os
+from flask_caching import Cache
+
 
 load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
+
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -29,6 +33,7 @@ def load_user(user_id):
 
 with app.app_context():
    db.create_all()
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -60,6 +65,7 @@ def register():
         
     return render_template('register.html', form=form)
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """
@@ -79,6 +85,7 @@ def login():
             flash('Login unsuccessful. Please check email and password.', 'danger')
     return render_template('login.html', form=form)
 
+
 @app.route('/logout')
 @login_required
 def logout():
@@ -88,6 +95,7 @@ def logout():
     """
     logout_user()
     return redirect(url_for('index'))
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -136,17 +144,32 @@ def view_recipe(recipe_id):
     - Fetches recipe data from Spoonacular API using the recipe's ID
     - Displays the recipe details on the 'view_recipe.html' page
     """
-    search_query = request.args.get('search_query', '')
-    url = f'https://api.spoonacular.com/recipes/{recipe_id}/information'
-    params = {
-        'apiKey': API_KEY,
-    }
+    # Check if the recipe data is already cached
+    cached_recipe = cache.get(f"recipe_{recipe_id}")
+    if cached_recipe:
+        recipe = cached_recipe
+    else:
+        # If not cached, fetch the recipe data from Spoonacular API
+        url = f'https://api.spoonacular.com/recipes/{recipe_id}/information'
+        params = {
+            'apiKey': API_KEY,
+        }
 
-    response = requests.get(url, params=params)
-    if response.status_code == 200:
-        recipe = response.json()
-        return render_template('view_recipe.html', recipe=recipe, search_query=search_query)
-    return "Recipe not found", 404
+        response = requests.get(url, params=params)
+        if response.status_code == 200:
+            recipe = response.json()
+            # Cache the recipe data for 1 hour
+            cache.set(f"recipe_{recipe_id}", recipe, timeout=3600) 
+        else:
+            return "Recipe not found", 404
+    
+    search_query = request.args.get('search_query', '')
+    # Check if the recipe is saved by the current user
+    already_saved = None
+    if current_user.is_authenticated:
+        already_saved = SavedRecipe.query.filter_by(user_id=current_user.id, recipe_id=recipe_id).first()
+
+    return render_template('view_recipe.html', recipe=recipe, search_query=search_query, already_saved=already_saved)
 
 
 @app.route('/my_recipe/<int:recipe_id>')
@@ -171,16 +194,39 @@ def create_recipe():
     """
     form = RecipeForm()
     if form.validate_on_submit():
-        recipe = UserRecipe(title=form.title.data, 
-                            ingredients=form.ingredients.data,
-                        instructions=form.instructions.data, 
-                        user_id=current_user.id
-                        )
+        recipe = UserRecipe(
+            title=form.title.data, 
+            ingredients=form.ingredients.data,
+            instructions=form.instructions.data, 
+            user_id=current_user.id,
+            image_url=form.image_url.data  
+        )
         db.session.add(recipe)
         db.session.commit()
         flash('Your recipe has been created!', 'success')
         return redirect(url_for('index'))
     return render_template('create_recipe.html', form=form)
+
+
+@app.route('/delete_my_recipe/<int:recipe_id>', methods=['POST'])
+@login_required
+def delete_my_recipe(recipe_id):
+    """
+    - Route for deleting a recipe that the user created.
+    - Checks if the logged-in user is the owner of the recipe before deletion.
+    """
+    recipe = UserRecipe.query.get_or_404(recipe_id)
+
+    if recipe.user_id != current_user.id:
+        flash('You are not authorized to delete this recipe.', 'danger')
+        return redirect(url_for('my_recipes'))
+    
+    db.session.delete(recipe)
+    db.session.commit()
+
+    flash('Your recipe has been deleted!', 'success')
+    return redirect(url_for('my_recipes'))
+
 
 @app.route('/save_recipe/<int:recipe_id>')
 @login_required
