@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
-from flask_login import LoginManager, login_user, login_required, logout_user
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 import requests
 from urllib.parse import unquote
 from models import db, User, Recipe, UserRecipe, SavedRecipe
@@ -107,6 +107,31 @@ def search_recipes(query):
         return data['results']
     return []
 
+
+@app.route('/recipe/<int:recipe_id>')
+def view_recipe(recipe_id):
+    # Check if the recipe data is already cached
+    cached_recipe = cache.get(f"recipe_{recipe_id}")
+    if cached_recipe:
+        recipe = cached_recipe
+    else:
+        # If not cached, fetch the recipe data from Spoonacular API
+        url = f'https://api.spoonacular.com/recipes/{recipe_id}/information'
+        params = {
+            'apiKey': API_KEY,
+        }
+
+        response = requests.get(url, params=params)
+        if response.status_code == 200:
+            recipe = response.json()
+            # Cache the recipe data for 1 hour
+            cache.set(f"recipe_{recipe_id}", recipe, timeout=3600) 
+        else:
+            return "Recipe not found", 404
+    
+    search_query = request.args.get('search_query', '')
+
+    return render_template('view_recipe.html', recipe=recipe, search_query=search_query)
 
 if __name__ == '__main__':
     app.run(debug=True)
