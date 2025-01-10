@@ -130,8 +130,60 @@ def view_recipe(recipe_id):
             return "Recipe not found", 404
     
     search_query = request.args.get('search_query', '')
+    # Check if the recipe is saved by the current user
+    already_saved = None
+    if current_user.is_authenticated:
+        already_saved = SavedRecipe.query.filter_by(user_id=current_user.id, recipe_id=recipe_id).first()
 
-    return render_template('view_recipe.html', recipe=recipe, search_query=search_query)
+    return render_template('view_recipe.html', recipe=recipe, search_query=search_query, already_saved=already_saved)
+
+
+@app.route('/save_recipe/<int:recipe_id>')
+@login_required
+def save_recipe(recipe_id):
+    # Try to find the recipe in the local database first
+    recipe = Recipe.query.filter_by(id=recipe_id).first()
+
+    # If the recipe doesn't exist locally, retrieve it from Spoonacular
+    if not recipe:
+        url = f'https://api.spoonacular.com/recipes/{recipe_id}/information'
+        params = {'apiKey': API_KEY}
+        response = requests.get(url, params=params)
+
+        if response.status_code == 200:
+            recipe_data = response.json()
+            # Create a new recipe in the local database
+            recipe = Recipe(
+                id=recipe_data['id'],  
+                title=recipe_data['title'],
+                ingredients=', '.join([ingredient['name'] for ingredient in recipe_data['extendedIngredients']]),
+                instructions=recipe_data['instructions'],
+                user_id=current_user.id  # Associate with the current user
+            )
+            db.session.add(recipe)
+            db.session.commit()
+        else:
+            flash('Recipe not found in Spoonacular!', 'danger')
+            return redirect(url_for('index'))
+
+    # Check if the recipe has already been saved by the current user
+    if SavedRecipe.query.filter_by(user_id=current_user.id, recipe_id=recipe.id).first():
+        flash('You have already saved this recipe!', 'info')
+    else:
+        # Save the recipe if it is not already saved
+        saved_recipe = SavedRecipe(user_id=current_user.id, recipe_id=recipe.id)
+        db.session.add(saved_recipe)
+        db.session.commit()
+        flash('Recipe saved!', 'success')
+
+    return redirect(url_for('index'))
+
+
+@app.route('/saved_recipes')
+@login_required
+def saved_recipes():
+    saved_recipes = SavedRecipe.query.filter_by(user_id=current_user.id).all()
+    return render_template('saved_recipes.html', saved_recipes=saved_recipes)
 
 if __name__ == '__main__':
     app.run(debug=True)

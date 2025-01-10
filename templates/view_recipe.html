@@ -22,7 +22,12 @@
             <li class="list-group-item">{{ step.step }}</li>
         {% endfor %}
     </ol>
-
+    {% if current_user.is_authenticated %}
+        {% if not already_saved %}
+            <a href="{{ url_for('save_recipe', recipe_id=recipe.id) }}" class="btn btn-primary">Save Recipe</a>
+        {% endif %}
+    {% endif %}
+    
     <a href="{{ url_for('index', search_query=search_query) }}" class="btn btn-secondary">Back to search results</a>
 </div>
 {% endblock %}
