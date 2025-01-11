@@ -405,8 +405,20 @@ def view_my_recipe(recipe_id):
 @login_required
 def delete_my_recipe(recipe_id):
     """
-    - Route for deleting a recipe that the user created.
-    - Checks if the logged-in user is the owner of the recipe before deletion.
+    Delete a recipe created by the logged-in user.
+
+    This route allows a user to delete a recipe they have created.
+    It first checks if the logged-in user is the owner of the recipe.
+    If the user is not the owner, they are redirected with an error message.
+    If the user is the owner, the recipe is deleted from the database.
+
+    Args:
+        recipe_id (int): The unique identifier of the recipe to be deleted.
+
+    Returns:
+        Redirect: 
+            - Redirects to the 'my_recipes' page after successful deletion.
+            - Redirects back to 'my_recipes' with a flash message if unauthorized.
     """
     recipe = UserRecipe.query.get_or_404(recipe_id)
 
