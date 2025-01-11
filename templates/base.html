@@ -18,6 +18,7 @@
                     <li class="nav-item"><a class="nav-link text-white" href="{{ url_for('index') }}">Home</a></li>
                     {% if current_user.is_authenticated %}
                         <li class="nav-item"><a class="nav-link text-white" href="{{ url_for('create_recipe') }}">Create Recipe</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="{{ url_for('my_recipes') }}">My Recipes</a></li>
                         <li class="nav-item"><a class="nav-link text-white" href="{{ url_for('saved_recipes') }}">Saved Recipes</a></li>
                         <li class="nav-item"><a class="nav-link text-white" href="{{ url_for('logout') }}">Logout</a></li>
                     {% else %}
