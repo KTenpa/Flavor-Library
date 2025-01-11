@@ -9,6 +9,7 @@
         {% for recipe in recipes %}
             <li class="list-group-item">
                 <h5>{{ recipe.title }}</h5>
+                <a href="{{ url_for('view_my_recipe', recipe_id=recipe.id) }}" class="btn btn-info">View Recipe</a>
             </li>
         {% endfor %}
     </ul>
