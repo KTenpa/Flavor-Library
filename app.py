@@ -236,5 +236,25 @@ def view_my_recipe(recipe_id):
     return render_template('view_my_recipe.html', recipe=recipe)
 
 
+@app.route('/delete_my_recipe/<int:recipe_id>', methods=['POST'])
+@login_required
+def delete_my_recipe(recipe_id):
+    """
+    - Route for deleting a recipe that the user created.
+    - Checks if the logged-in user is the owner of the recipe before deletion.
+    """
+    recipe = UserRecipe.query.get_or_404(recipe_id)
+
+    if recipe.user_id != current_user.id:
+        flash('You are not authorized to delete this recipe.', 'danger')
+        return redirect(url_for('my_recipes'))
+    
+    db.session.delete(recipe)
+    db.session.commit()
+
+    flash('Your recipe has been deleted!', 'success')
+    return redirect(url_for('my_recipes'))
+
+
 if __name__ == '__main__':
     app.run(debug=True)
