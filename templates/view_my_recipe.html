@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}{{ recipe.title }} - Flavor Library{% endblock %}
+
+{% block content %}
+<div class="recipe-details">
+    <h2>{{ recipe.title }}</h2>
+    {% if recipe.image_url %}
+        <div class="recipe-image">
+            <img src="{{ recipe.image_url }}" alt="{{ recipe.title }}" class="img-fluid mb-3" style="max-width: 50%; height: auto;"/>
+        </div>
+    {% else %}
+        <p>No image available for this recipe.</p>
+    {% endif %}
+    <h3>Ingredients</h3>
+    <ul class="list-group">
+        <li class="list-group-item">{{ recipe.ingredients }}</li>
+    </ul>
+
+    <h3>Instructions</h3>
+    <ul class="list-group">
+        <li class="list-group-item">{{ recipe.instructions }}</li>
+    </ul>
+</div>
+{% endblock %}

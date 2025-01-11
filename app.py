@@ -229,5 +229,12 @@ def my_recipes():
     recipes = UserRecipe.query.filter_by(user_id=current_user.id).all()
     return render_template('my_recipes.html', recipes=recipes)
 
+
+@app.route('/my_recipe/<int:recipe_id>')
+def view_my_recipe(recipe_id):
+    recipe = UserRecipe.query.filter_by(id=recipe_id).first()
+    return render_template('view_my_recipe.html', recipe=recipe)
+
+
 if __name__ == '__main__':
     app.run(debug=True)
