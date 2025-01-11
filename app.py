@@ -3,7 +3,7 @@ from flask_login import LoginManager, login_user, login_required, logout_user, c
 import requests
 from urllib.parse import unquote
 from models import db, User, Recipe, UserRecipe, SavedRecipe
-from forms import RegistrationForm, LoginForm
+from forms import RegistrationForm, LoginForm, RecipeForm
 from sqlalchemy.exc import IntegrityError
 from dotenv import load_dotenv
 import os
@@ -202,6 +202,25 @@ def delete_saved_recipe(saved_recipe_id):
 
     flash('Recipe removed from your saved list!', 'success')
     return redirect(url_for('saved_recipes'))
+
+
+@app.route('/create_recipe', methods=['GET', 'POST'])
+@login_required
+def create_recipe():
+    form = RecipeForm()
+    if form.validate_on_submit():
+        recipe = UserRecipe(
+            title=form.title.data, 
+            ingredients=form.ingredients.data,
+            instructions=form.instructions.data, 
+            user_id=current_user.id,
+            image_url=form.image_url.data  
+        )
+        db.session.add(recipe)
+        db.session.commit()
+        flash('Your recipe has been created!', 'success')
+        return redirect(url_for('index'))
+    return render_template('create_recipe.html', form=form)
 
 if __name__ == '__main__':
     app.run(debug=True)
