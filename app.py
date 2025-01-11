@@ -185,5 +185,23 @@ def saved_recipes():
     saved_recipes = SavedRecipe.query.filter_by(user_id=current_user.id).all()
     return render_template('saved_recipes.html', saved_recipes=saved_recipes)
 
+
+@app.route('/delete_saved_recipe/<int:saved_recipe_id>', methods=['POST'])
+@login_required
+def delete_saved_recipe(saved_recipe_id):
+    # Find the SavedRecipe entry by ID
+    saved_recipe = SavedRecipe.query.get_or_404(saved_recipe_id)
+
+    # Ensure that the current user is the one who saved the recipe
+    if saved_recipe.user_id != current_user.id:
+        flash('You are not authorized to delete this saved recipe.', 'danger')
+        return redirect(url_for('saved_recipes'))
+    
+    db.session.delete(saved_recipe)
+    db.session.commit()
+
+    flash('Recipe removed from your saved list!', 'success')
+    return redirect(url_for('saved_recipes'))
+
 if __name__ == '__main__':
     app.run(debug=True)
